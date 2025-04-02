@@ -53,9 +53,9 @@ PoseGraphManager::PoseGraphManager(const rclcpp::NodeOptions &options)
   save_in_kitti_format_ = declare_parameter<bool>("result.save_in_kitti_format", false);
   seq_name_             = declare_parameter<std::string>("result.seq_name", "");
 
-  rclcpp::QoS qos(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
-  qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
+  rclcpp::QoS qos(1);
   qos.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
+  qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
 
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
@@ -76,26 +76,26 @@ PoseGraphManager::PoseGraphManager(const rclcpp::NodeOptions &options)
 
   // NOTE(hlim): To make this node compatible with being launched under different namespaces,
   // I deliberately avoided adding a '/' in front of the topic names.
-  path_pub_           = this->create_publisher<nav_msgs::msg::Path>("path/original", 10);
-  corrected_path_pub_ = this->create_publisher<nav_msgs::msg::Path>("path/corrected", 10);
-  map_pub_            = this->create_publisher<sensor_msgs::msg::PointCloud2>("global_map", 1);
-  scan_pub_           = this->create_publisher<sensor_msgs::msg::PointCloud2>("curr_scan", 10);
+  path_pub_           = this->create_publisher<nav_msgs::msg::Path>("path/original", qos);
+  corrected_path_pub_ = this->create_publisher<nav_msgs::msg::Path>("path/corrected", qos);
+  map_pub_            = this->create_publisher<sensor_msgs::msg::PointCloud2>("global_map", qos);
+  scan_pub_           = this->create_publisher<sensor_msgs::msg::PointCloud2>("curr_scan", qos);
   loop_detection_pub_ =
-      this->create_publisher<visualization_msgs::msg::Marker>("loop_detection", 10);
+      this->create_publisher<visualization_msgs::msg::Marker>("loop_detection", qos);
   loop_detection_radius_pub_ =
-      this->create_publisher<visualization_msgs::msg::Marker>("loop_detection_radius", 10);
+      this->create_publisher<visualization_msgs::msg::Marker>("loop_detection_radius", qos);
 
   // loop_closures_pub_ =
   // this->create_publisher<pose_graph_tools_msgs::msg::PoseGraph>("/hydra_ros_node/external_loop_closures",
   // 10);
-  realtime_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose_stamped", 10);
-  debug_src_pub_     = this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/src", 10);
-  debug_tgt_pub_     = this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/tgt", 10);
+  realtime_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose_stamped", qos);
+  debug_src_pub_     = this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/src", qos);
+  debug_tgt_pub_     = this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/tgt", qos);
   debug_coarse_aligned_pub_ =
-      this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/coarse_alignment", 10);
+      this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/coarse_alignment", qos);
   debug_fine_aligned_pub_ =
-      this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/fine_alignment", 10);
-  debug_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/debug_cloud", 10);
+      this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/fine_alignment", qos);
+  debug_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/debug_cloud", qos);
 
   sub_odom_ = std::make_shared<message_filters::Subscriber<nav_msgs::msg::Odometry>>(this, "/odom");
   sub_scan_ =
