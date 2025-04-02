@@ -48,6 +48,7 @@ class InterFrameAligner : public rclcpp::Node {
 
     lc_config.voxel_res_ = declare_parameter<double>("voxel_resolution", 1.0);
     lc_config.verbose_   = declare_parameter<bool>("loop.verbose", false);
+    verbose_             = declare_parameter<bool>("verbose", false);
 
     gc.num_threads_               = declare_parameter<int>("local_reg.num_threads", 8);
     gc.correspondence_randomness_ = declare_parameter<int>("local_reg.correspondences_number", 20);
@@ -95,11 +96,17 @@ class InterFrameAligner : public rclcpp::Node {
   }
 
   void callbackSource(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &msg) {
+    if (verbose_) {
+      RCLCPP_INFO(this->get_logger(), "Source map cloud has come!");
+    }
     pcl::fromROSMsg(*msg, *source_cloud_);
     is_source_updated_ = true;
   }
 
   void callbackTarget(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &msg) {
+    if (verbose_) {
+      RCLCPP_INFO(this->get_logger(), "Target map cloud has come!");
+    }
     pcl::fromROSMsg(*msg, *target_cloud_);
     is_target_updated_ = true;
   }
@@ -109,7 +116,7 @@ class InterFrameAligner : public rclcpp::Node {
 
     const auto &estimate = reg_module_->coarseToFineAlignment(*source_cloud_, *target_cloud_);
     const double eps     = 1e-6;
-    if ((estimate.pose_ - Eigen::Matrix4d::Identity()).norm() < eps) {
+    if ((estimate.pose_ - Eigen::Matrix4d::Identity()).norm() < eps && verbose_) {
       RCLCPP_INFO(this->get_logger(), "Pose is approximately identity.");
     }
 
@@ -163,6 +170,8 @@ class InterFrameAligner : public rclcpp::Node {
 
   pcl::PointCloud<PointType>::Ptr source_cloud_;
   pcl::PointCloud<PointType>::Ptr target_cloud_;
+
+  bool verbose_ = false;
 
   bool is_source_updated_ = false;
   bool is_target_updated_ = false;
