@@ -106,7 +106,27 @@ ament_target_dependencies(kiss_matcher_sam
   pcl_conversions
   PCL
 )
+
 target_link_libraries(kiss_matcher_sam
+  kiss_matcher::kiss_matcher_core
+  ${PCL_LIBRARIES}
+  small_gicp
+  gtsam
+)
+
+add_executable(inter_frame_alignment src/inter_frame_alignment.cpp
+                                     src/slam/loop_closure.cpp)
+ament_target_dependencies(inter_frame_alignment
+  rclcpp
+  tf2_ros
+  sensor_msgs
+  nav_msgs
+  visualization_msgs
+  pcl_conversions
+  PCL
+)
+
+target_link_libraries(inter_frame_alignment
   kiss_matcher::kiss_matcher_core
   ${PCL_LIBRARIES}
   small_gicp
@@ -117,6 +137,7 @@ install(TARGETS
   registration_visualizer
   run_kiss_matcher
   kiss_matcher_sam
+  inter_frame_alignment
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
