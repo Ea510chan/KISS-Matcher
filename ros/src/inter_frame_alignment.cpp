@@ -69,11 +69,11 @@ class InterFrameAligner : public rclcpp::Node {
 
     reg_module_ = std::make_shared<LoopClosure>(lc_config, this->get_logger());
 
-    debug_src_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/src", qos);
-    debug_tgt_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/tgt", qos);
-    debug_coarse_aligned_pub_ =
+    source_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/src", qos);
+    target_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/tgt", qos);
+    coarse_aligned_pub_ =
         this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/coarse_alignment", qos);
-    debug_fine_aligned_pub_ =
+    fine_aligned_pub_ =
         this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/fine_alignment", qos);
 
     inter_alignment_timer_ =
@@ -166,11 +166,11 @@ class InterFrameAligner : public rclcpp::Node {
     if (!need_cloud_vis_update_) {
       return;
     }
-    debug_src_pub_->publish(toROSMsg(std::move(reg_module_->getSourceCloud()), target_frame_));
-    debug_tgt_pub_->publish(toROSMsg(std::move(reg_module_->getTargetCloud()), target_frame_));
-    debug_fine_aligned_pub_->publish(
+    source_pub_->publish(toROSMsg(std::move(reg_module_->getSourceCloud()), target_frame_));
+    target_pub_->publish(toROSMsg(std::move(reg_module_->getTargetCloud()), target_frame_));
+    fine_aligned_pub_->publish(
         toROSMsg(std::move(reg_module_->getFinalAlignedCloud()), target_frame_));
-    debug_coarse_aligned_pub_->publish(
+    coarse_aligned_pub_->publish(
         toROSMsg(std::move(reg_module_->getCoarseAlignedCloud()), target_frame_));
 
     RCLCPP_WARN(this->get_logger(), "Clouds published!");
@@ -200,10 +200,10 @@ class InterFrameAligner : public rclcpp::Node {
 
   kiss_matcher::TicToc timer_;
 
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_src_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_tgt_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_coarse_aligned_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_fine_aligned_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr source_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr target_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr coarse_aligned_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr fine_aligned_pub_;
 
   rclcpp::TimerBase::SharedPtr inter_alignment_timer_;
   rclcpp::TimerBase::SharedPtr cloud_vis_timer_;
