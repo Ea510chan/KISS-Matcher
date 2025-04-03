@@ -232,7 +232,8 @@ RegOutput LoopClosure::coarseToFineAlignment(const pcl::PointCloud<PointType> &s
 
   *coarse_aligned_ = transformPcd(src, coarse_alignment);
 
-  const size_t num_inliers = global_reg_handler_->getNumFinalInliers();
+  const size_t num_inliers      = global_reg_handler_->getNumFinalInliers();
+  reg_output.num_final_inliers_ = num_inliers;
   if (config_.verbose_) {
     if (num_inliers > config_.num_inliers_threshold_) {
       RCLCPP_INFO(logger_,
