@@ -80,6 +80,7 @@ class LoopClosure {
   explicit LoopClosure(const LoopClosureConfig &config, const rclcpp::Logger &logger);
   ~LoopClosure();
   double calculateDistance(const Eigen::Matrix4d &pose1, const Eigen::Matrix4d &pose2);
+
   LoopCandidates getLoopCandidatesFromQuery(const PoseGraphNode &query_frame,
                                             const std::vector<PoseGraphNode> &keyframes);
 
@@ -87,6 +88,7 @@ class LoopClosure {
 
   LoopIdxPairs fetchClosestLoopCandidate(const PoseGraphNode &query_frame,
                                          const std::vector<PoseGraphNode> &keyframes);
+
   LoopIdxPairs fetchLoopCandidates(const PoseGraphNode &query_frame,
                                    const std::vector<PoseGraphNode> &keyframes,
                                    const size_t num_max_candidates  = 3,
@@ -98,12 +100,19 @@ class LoopClosure {
                              const size_t num_submap_keyframes,
                              const double voxel_res,
                              const bool enable_global_registration);
+
+  void setSrcAndTgtCloud(const pcl::PointCloud<PointType> &src_cloud,
+                         const pcl::PointCloud<PointType> &tgt_cloud);
+
   RegOutput icpAlignment(const pcl::PointCloud<PointType> &src,
                          const pcl::PointCloud<PointType> &tgt);
+
   RegOutput coarseToFineAlignment(const pcl::PointCloud<PointType> &src,
                                   const pcl::PointCloud<PointType> &tgt);
+
   RegOutput performLoopClosure(const PoseGraphNode &query_keyframe,
                                const std::vector<PoseGraphNode> &keyframes);
+
   RegOutput performLoopClosure(const std::vector<PoseGraphNode> &keyframes,
                                const size_t query_idx,
                                const size_t match_idx);

@@ -169,6 +169,12 @@ NodePair LoopClosure::setSrcAndTgtCloud(const std::vector<PoseGraphNode> &keyfra
   return {*voxelize(src_accum, voxel_res), *voxelize(tgt_accum, voxel_res)};
 }
 
+NodePair LoopClosure::setSrcAndTgtCloud(const pcl::PointCloud<PointType> &src_cloud,
+                                        const pcl::PointCloud<PointType> &tgt_cloud) {
+  *src_cloud_ = src_cloud;
+  *tgt_cloud_ = tgt_cloud;
+}
+
 RegOutput LoopClosure::icpAlignment(const pcl::PointCloud<PointType> &src,
                                     const pcl::PointCloud<PointType> &tgt) {
   RegOutput reg_output;
