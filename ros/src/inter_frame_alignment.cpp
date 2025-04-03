@@ -59,23 +59,22 @@ class InterFrameAligner : public rclcpp::Node {
 
     lc_config.enable_global_registration_ = declare_parameter<bool>("global_reg.enable", false);
     lc_config.num_inliers_threshold_ =
-        declare_parameter<int>("global_reg.num_inliers_threshold", 100);
+        declare_parameter<int>("global_reg.num_inliers_threshold", 20);
 
-    rclcpp::QoS qos(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
-    qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
+    rclcpp::QoS qos(1);
     qos.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
+    qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
 
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     reg_module_ = std::make_shared<LoopClosure>(lc_config, this->get_logger());
 
-    debug_src_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("inter_frame/src", 10);
-    debug_tgt_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("inter_frame/tgt", 10);
+    debug_src_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/src", qos);
+    debug_tgt_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/tgt", qos);
     debug_coarse_aligned_pub_ =
-        this->create_publisher<sensor_msgs::msg::PointCloud2>("inter_frame/coarse_alignment", 10);
+        this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/coarse_alignment", qos);
     debug_fine_aligned_pub_ =
-        this->create_publisher<sensor_msgs::msg::PointCloud2>("inter_frame/fine_alignment", 10);
-    debug_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("lc/debug_cloud", 10);
+        this->create_publisher<sensor_msgs::msg::PointCloud2>("reg/fine_alignment", qos);
 
     inter_alignment_timer_ =
         this->create_wall_timer(std::chrono::duration<double>(1.0 / frame_update_hz),
@@ -93,6 +92,8 @@ class InterFrameAligner : public rclcpp::Node {
 
     source_cloud_.reset(new pcl::PointCloud<PointType>());
     target_cloud_.reset(new pcl::PointCloud<PointType>());
+
+    publishTF();
   }
 
   void callbackSource(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &msg) {
@@ -114,14 +115,32 @@ class InterFrameAligner : public rclcpp::Node {
   void performAlignment() {
     if (!is_source_updated_ || !is_target_updated_) return;
 
-    const auto &estimate = reg_module_->coarseToFineAlignment(*source_cloud_, *target_cloud_);
-    const double eps     = 1e-6;
-    if ((estimate.pose_ - Eigen::Matrix4d::Identity()).norm() < eps && verbose_) {
-      RCLCPP_INFO(this->get_logger(), "Pose is approximately identity.");
+    kiss_matcher::TicToc timer;
+    // Only for visualization
+    reg_module_->setSrcAndTgtCloud(*source_cloud_, *target_cloud_);
+    const auto &reg_output = reg_module_->coarseToFineAlignment(*source_cloud_, *target_cloud_);
+    const auto t           = timer.toc();
+
+    RCLCPP_INFO(this->get_logger(), "Timing (msec) → Total: %.1f", t);
+
+    // NOTE(hlim): No matter how the result is imprecise, flags should be updated
+    is_source_updated_ = false;
+    is_target_updated_ = false;
+
+    need_cloud_vis_update_ = true;
+
+    const double eps = 1e-6;
+
+    if (!reg_output.is_valid_) {
+      RCLCPP_WARN(
+          this->get_logger(), "Alignment rejected. # of inliers: %.3f", reg_output.overlapness_);
     }
 
-    target_T_source_ = estimate.pose_;
+    target_T_source_ = reg_output.pose_;
+    publishTF();
+  }
 
+  void publishTF() {
     Eigen::Matrix3d rot   = target_T_source_.block<3, 3>(0, 0);
     Eigen::Vector3d trans = target_T_source_.block<3, 1>(0, 3);
 
@@ -141,24 +160,21 @@ class InterFrameAligner : public rclcpp::Node {
     transform_msg.transform.rotation.w = q.w();
 
     tf_broadcaster_->sendTransform(transform_msg);
-
-    is_source_updated_ = false;
-    is_target_updated_ = false;
-
-    need_lc_cloud_vis_update_ = true;
   }
 
   void visualizeClouds() {
-    if (!need_lc_cloud_vis_update_) {
+    if (!need_cloud_vis_update_) {
       return;
     }
-    debug_src_pub_->publish(toROSMsg(reg_module_->getSourceCloud(), target_frame_));
-    debug_tgt_pub_->publish(toROSMsg(reg_module_->getTargetCloud(), target_frame_));
-    debug_fine_aligned_pub_->publish(toROSMsg(reg_module_->getFinalAlignedCloud(), target_frame_));
+    debug_src_pub_->publish(toROSMsg(std::move(reg_module_->getSourceCloud()), target_frame_));
+    debug_tgt_pub_->publish(toROSMsg(std::move(reg_module_->getTargetCloud()), target_frame_));
+    debug_fine_aligned_pub_->publish(
+        toROSMsg(std::move(reg_module_->getFinalAlignedCloud()), target_frame_));
     debug_coarse_aligned_pub_->publish(
-        toROSMsg(reg_module_->getCoarseAlignedCloud(), target_frame_));
-    debug_cloud_pub_->publish(toROSMsg(reg_module_->getDebugCloud(), target_frame_));
-    need_lc_cloud_vis_update_ = false;
+        toROSMsg(std::move(reg_module_->getCoarseAlignedCloud()), target_frame_));
+
+    RCLCPP_WARN(this->get_logger(), "Clouds published!");
+    need_cloud_vis_update_ = false;
   }
 
  private:
@@ -176,7 +192,7 @@ class InterFrameAligner : public rclcpp::Node {
   bool is_source_updated_ = false;
   bool is_target_updated_ = false;
 
-  bool need_lc_cloud_vis_update_ = false;
+  bool need_cloud_vis_update_ = false;
 
   std::shared_ptr<kiss_matcher::LoopClosure> reg_module_;
 
@@ -188,7 +204,6 @@ class InterFrameAligner : public rclcpp::Node {
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_tgt_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_coarse_aligned_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_fine_aligned_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debug_cloud_pub_;
 
   rclcpp::TimerBase::SharedPtr inter_alignment_timer_;
   rclcpp::TimerBase::SharedPtr cloud_vis_timer_;
