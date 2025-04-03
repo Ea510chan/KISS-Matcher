@@ -44,6 +44,7 @@ class InterFrameAligner : public rclcpp::Node {
 
     source_frame_   = declare_parameter<std::string>("source_frame", "");
     target_frame_   = declare_parameter<std::string>("target_frame", "");
+    world_frame_    = declare_parameter<std::string>("world", "world");
     frame_update_hz = declare_parameter<double>("frame_update_hz", 0.2);
 
     lc_config.voxel_res_ = declare_parameter<double>("voxel_resolution", 1.0);
@@ -65,7 +66,8 @@ class InterFrameAligner : public rclcpp::Node {
     qos.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
     qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
 
-    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+    tf_source_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+    tf_target_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     reg_module_ = std::make_shared<LoopClosure>(lc_config, this->get_logger());
 
@@ -80,6 +82,9 @@ class InterFrameAligner : public rclcpp::Node {
         this->create_wall_timer(std::chrono::duration<double>(1.0 / frame_update_hz),
                                 std::bind(&InterFrameAligner::performAlignment, this));
 
+    tf_timer_ = this->create_wall_timer(std::chrono::duration<double>(1.0 / 100.0),
+                                        std::bind(&InterFrameAligner::publishTF, this));
+
     // 20 Hz is enough as long as it's faster than the full registration process.
     cloud_vis_timer_ =
         this->create_wall_timer(std::chrono::duration<double>(1.0 / 20.0),
@@ -92,8 +97,6 @@ class InterFrameAligner : public rclcpp::Node {
 
     source_cloud_.reset(new pcl::PointCloud<PointType>());
     target_cloud_.reset(new pcl::PointCloud<PointType>());
-
-    publishTF();
   }
 
   void callbackSource(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &msg) {
@@ -140,38 +143,53 @@ class InterFrameAligner : public rclcpp::Node {
     publishTF();
   }
 
-  void publishTF() {
-    Eigen::Matrix3d rot   = target_T_source_.block<3, 3>(0, 0);
-    Eigen::Vector3d trans = target_T_source_.block<3, 1>(0, 3);
-
+  geometry_msgs::msg::TransformStamped createTransformStamped(const Eigen::Matrix4d &from_T_to,
+                                                              const std::string &from_frame,
+                                                              const std::string &to_frame,
+                                                              const rclcpp::Time &stamp) {
     geometry_msgs::msg::TransformStamped transform_msg;
-    transform_msg.header.stamp    = this->get_clock()->now();
-    transform_msg.header.frame_id = target_frame_;
-    transform_msg.child_frame_id  = source_frame_;
 
+    // Extract rotation and translation
+    Eigen::Matrix3d rot   = from_T_to.block<3, 3>(0, 0);
+    Eigen::Vector3d trans = from_T_to.block<3, 1>(0, 3);
+    Eigen::Quaterniond q(rot);
+
+    // Fill message
+    transform_msg.header.stamp            = stamp;
+    transform_msg.header.frame_id         = from_frame;
+    transform_msg.child_frame_id          = to_frame;
     transform_msg.transform.translation.x = trans.x();
     transform_msg.transform.translation.y = trans.y();
     transform_msg.transform.translation.z = trans.z();
+    transform_msg.transform.rotation.x    = q.x();
+    transform_msg.transform.rotation.y    = q.y();
+    transform_msg.transform.rotation.z    = q.z();
+    transform_msg.transform.rotation.w    = q.w();
 
-    Eigen::Quaterniond q(rot);
-    transform_msg.transform.rotation.x = q.x();
-    transform_msg.transform.rotation.y = q.y();
-    transform_msg.transform.rotation.z = q.z();
-    transform_msg.transform.rotation.w = q.w();
+    return transform_msg;
+  }
 
-    tf_broadcaster_->sendTransform(transform_msg);
+  void publishTF() {
+    const auto &world_to_source_msg = createTransformStamped(
+        target_T_source_, world_frame_, source_frame_, this->get_clock()->now());
+    // This is fixed, i.e., the World frame == target's frame
+    static const auto &world_to_target_msg = createTransformStamped(
+        Eigen::Matrix4d::Identity(), world_frame_, target_frame_, this->get_clock()->now());
+
+    tf_source_broadcaster_->sendTransform(world_to_source_msg);
+    tf_target_broadcaster_->sendTransform(world_to_target_msg);
   }
 
   void visualizeClouds() {
     if (!need_cloud_vis_update_) {
       return;
     }
-    source_pub_->publish(toROSMsg(std::move(reg_module_->getSourceCloud()), target_frame_));
-    target_pub_->publish(toROSMsg(std::move(reg_module_->getTargetCloud()), target_frame_));
+    source_pub_->publish(toROSMsg(std::move(reg_module_->getSourceCloud()), world_frame_));
+    target_pub_->publish(toROSMsg(std::move(reg_module_->getTargetCloud()), world_frame_));
     fine_aligned_pub_->publish(
-        toROSMsg(std::move(reg_module_->getFinalAlignedCloud()), target_frame_));
+        toROSMsg(std::move(reg_module_->getFinalAlignedCloud()), world_frame_));
     coarse_aligned_pub_->publish(
-        toROSMsg(std::move(reg_module_->getCoarseAlignedCloud()), target_frame_));
+        toROSMsg(std::move(reg_module_->getCoarseAlignedCloud()), world_frame_));
 
     RCLCPP_WARN(this->get_logger(), "Clouds published!");
     need_cloud_vis_update_ = false;
@@ -183,6 +201,7 @@ class InterFrameAligner : public rclcpp::Node {
 
   std::string source_frame_;
   std::string target_frame_;
+  std::string world_frame_;
 
   pcl::PointCloud<PointType>::Ptr source_cloud_;
   pcl::PointCloud<PointType>::Ptr target_cloud_;
@@ -196,7 +215,8 @@ class InterFrameAligner : public rclcpp::Node {
 
   std::shared_ptr<kiss_matcher::LoopClosure> reg_module_;
 
-  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_source_broadcaster_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_target_broadcaster_;
 
   kiss_matcher::TicToc timer_;
 
@@ -207,6 +227,7 @@ class InterFrameAligner : public rclcpp::Node {
 
   rclcpp::TimerBase::SharedPtr inter_alignment_timer_;
   rclcpp::TimerBase::SharedPtr cloud_vis_timer_;
+  rclcpp::TimerBase::SharedPtr tf_timer_;
 
   Eigen::Matrix4d target_T_source_ = Eigen::Matrix4d::Identity();
 };
