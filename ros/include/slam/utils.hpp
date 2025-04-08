@@ -177,11 +177,18 @@ inline rclcpp::Time toRclcppTime(const double timestamp) {
 }
 
 template <typename T>
-inline sensor_msgs::msg::PointCloud2 toROSMsg(const pcl::PointCloud<T> &cloud,
-                                              const std::string &frame_id = "map") {
+inline sensor_msgs::msg::PointCloud2 toROSMsg(
+    const pcl::PointCloud<T> &cloud,
+    const std::string &frame_id              = "map",
+    const std::optional<rclcpp::Time> &stamp = std::nullopt) {
   sensor_msgs::msg::PointCloud2 cloud_ros;
   pcl::toROSMsg(cloud, cloud_ros);
   cloud_ros.header.frame_id = frame_id;
+
+  if (stamp.has_value()) {
+    cloud_ros.header.stamp = stamp.value();
+  }
+
   return cloud_ros;
 }
 
