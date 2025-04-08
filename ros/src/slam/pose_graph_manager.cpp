@@ -333,7 +333,8 @@ void PoseGraphManager::buildMap() {
     }
 
     const auto &voxelized_map = voxelize(map_cloud_, map_voxel_res_);
-    map_pub_->publish(toROSMsg(*voxelized_map, map_frame_));
+    map_pub_->publish(
+        toROSMsg(*voxelized_map, map_frame_, toRclcppTime(keyframes_.back().timestamp_)));
   }
 
   if (need_map_update_) {
@@ -462,8 +463,8 @@ void PoseGraphManager::visualizeCurrentData(const Eigen::Matrix4d &current_odom,
     tf_broadcaster_->sendTransform(transform_stamped);
   }
 
-  scan_pub_->publish(
-      toROSMsg(transformPcd(current_frame_.scan_, current_frame_.pose_corrected_), map_frame_));
+  scan_pub_->publish(toROSMsg(
+      transformPcd(current_frame_.scan_, current_frame_.pose_corrected_), map_frame_, timestamp));
   if (!corrected_path_.poses.empty()) {
     loop_detection_radius_pub_->publish(
         visualizeLoopDetectionRadius(corrected_path_.poses.back().pose.position));
