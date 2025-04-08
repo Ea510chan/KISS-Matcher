@@ -188,7 +188,6 @@ void PoseGraphManager::callbackNode(const nav_msgs::msg::Odometry::ConstSharedPt
   Eigen::Matrix4d current_odom = current_frame_.pose_;
   current_frame_               = PoseGraphNode(
       *odom_msg, *scan_msg, latest_keyframe_idx, scan_voxel_res_, store_voxelized_scan_);
-  current_stamp_ = (*odom_msg).header.stamp;
 
   kiss_matcher::TicToc total_timer;
   kiss_matcher::TicToc local_timer;
