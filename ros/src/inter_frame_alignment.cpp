@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <string>
 
@@ -106,6 +107,7 @@ class InterFrameAligner : public rclcpp::Node {
     }
     pcl::fromROSMsg(*msg, *source_cloud_);
     is_source_updated_ = true;
+    source_timestamp_  = rclcpp::Time(msg->header.stamp);
   }
 
   void callbackTarget(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &msg) {
@@ -114,6 +116,7 @@ class InterFrameAligner : public rclcpp::Node {
     }
     pcl::fromROSMsg(*msg, *target_cloud_);
     is_target_updated_ = true;
+    target_timestamp_  = rclcpp::Time(msg->header.stamp);
   }
 
   void performAlignment() {
@@ -172,11 +175,35 @@ class InterFrameAligner : public rclcpp::Node {
   }
 
   void publishTF() {
-    const auto &world_to_source_msg = createTransformStamped(
-        target_T_source_, world_frame_, source_frame_, this->get_clock()->now());
-    // This is fixed, i.e., the World frame == target's frame
-    static const auto &world_to_target_msg = createTransformStamped(
-        Eigen::Matrix4d::Identity(), world_frame_, target_frame_, this->get_clock()->now());
+    if ((!source_timestamp_.has_value()) || (!target_timestamp_.has_value())) {
+      RCLCPP_WARN(this->get_logger(), "Waiting for map clouds...");
+      return;
+    }
+
+    // NOTE(hlim): To visualize real-time topics, such as current scans,
+    // we have to incrementally increase the timestamp
+    rclcpp::Time now = this->get_clock()->now();
+    if (!source_timestamp_base_.has_value() || *source_timestamp_ != *source_timestamp_base_) {
+      source_timestamp_base_ = source_timestamp_;
+      last_real_time_        = now;
+    }
+    if (!target_timestamp_base_.has_value() || *target_timestamp_ != *target_timestamp_base_) {
+      target_timestamp_base_ = target_timestamp_;
+      last_real_time_        = now;
+    }
+
+    rclcpp::Duration elapsed = now - last_real_time_;
+    if (elapsed.nanoseconds() < 0) {
+      elapsed = rclcpp::Duration::from_nanoseconds(0);
+    }
+
+    rclcpp::Time source_time = *source_timestamp_base_ + elapsed;
+    rclcpp::Time target_time = *target_timestamp_base_ + elapsed;
+
+    const auto &world_to_source_msg =
+        createTransformStamped(target_T_source_, world_frame_, source_frame_, source_time);
+    const auto &world_to_target_msg = createTransformStamped(
+        Eigen::Matrix4d::Identity(), world_frame_, target_frame_, target_time);
 
     tf_source_broadcaster_->sendTransform(world_to_source_msg);
     tf_target_broadcaster_->sendTransform(world_to_target_msg);
@@ -193,7 +220,7 @@ class InterFrameAligner : public rclcpp::Node {
     coarse_aligned_pub_->publish(
         toROSMsg(std::move(reg_module_->getCoarseAlignedCloud()), world_frame_));
 
-    RCLCPP_WARN(this->get_logger(), "Clouds published!");
+    RCLCPP_INFO(this->get_logger(), "Clouds published!");
     need_cloud_vis_update_ = false;
   }
 
@@ -207,6 +234,12 @@ class InterFrameAligner : public rclcpp::Node {
 
   pcl::PointCloud<PointType>::Ptr source_cloud_;
   pcl::PointCloud<PointType>::Ptr target_cloud_;
+
+  std::optional<rclcpp::Time> source_timestamp_;
+  std::optional<rclcpp::Time> source_timestamp_base_;
+  std::optional<rclcpp::Time> target_timestamp_;
+  std::optional<rclcpp::Time> target_timestamp_base_;
+  rclcpp::Time last_real_time_;
 
   bool verbose_ = false;
 
