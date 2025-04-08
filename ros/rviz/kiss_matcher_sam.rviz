@@ -8,6 +8,8 @@ Panels:
         - /kiss_matcher_sam1
         - /kiss_matcher_sam1/Loop closure1
         - /kiss_matcher_sam1/Global map1/Autocompute Value Bounds1
+        - /kiss_matcher_sam1/Corrected traj1
+        - /kiss_matcher_sam1/Raw traj1
         - /debug_cloud1
       Splitter Ratio: 0.7411764860153198
     Tree Height: 1099
@@ -273,7 +275,7 @@ Visualization Manager:
           Enabled: true
           Name: Loops
           Namespaces:
-            "": true
+            {}
           Topic:
             Depth: 5
             Durability Policy: Volatile
@@ -295,10 +297,10 @@ Visualization Manager:
             Value: /km_sam/loop_detection_array
           Value: true
         - Class: rviz_default_plugins/Marker
-          Enabled: false
+          Enabled: true
           Name: Loop closure radius
           Namespaces:
-            {}
+            "": true
           Topic:
             Depth: 5
             Durability Policy: Volatile
@@ -306,7 +308,7 @@ Visualization Manager:
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /km_sam/loop_detection_radius
-          Value: false
+          Value: true
         - Alpha: 1
           Buffer Length: 1
           Class: rviz_default_plugins/Path
@@ -315,15 +317,15 @@ Visualization Manager:
           Head Diameter: 0.30000001192092896
           Head Length: 0.20000000298023224
           Length: 1
-          Line Style: Lines
-          Line Width: 0.029999999329447746
+          Line Style: Billboards
+          Line Width: 0.75
           Name: Corrected traj
           Offset:
             X: 0
             Y: 0
             Z: 0
           Pose Color: 255; 85; 255
-          Pose Style: Axes
+          Pose Style: None
           Radius: 0.20000000298023224
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -343,8 +345,8 @@ Visualization Manager:
           Head Diameter: 0.30000001192092896
           Head Length: 0.20000000298023224
           Length: 0.30000001192092896
-          Line Style: Lines
-          Line Width: 0.029999999329447746
+          Line Style: Billboards
+          Line Width: 0.75
           Name: Raw traj
           Offset:
             X: 0
@@ -444,16 +446,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 573.3956909179688
+      Distance: 81.19715881347656
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 52.52424621582031
-        Y: -85.3425521850586
-        Z: -16.11746597290039
+        X: 3.805950880050659
+        Y: 2.7413039207458496
+        Z: -16.041765213012695
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

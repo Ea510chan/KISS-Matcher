@@ -12,16 +12,13 @@ Panels:
         - /hathor1/Loop closure1/coarse alignment1
         - /hathor1/Global map1/Autocompute Value Bounds1
         - /acl_jackal1
-        - /acl_jackal1/Loop closure1
-        - /acl_jackal1/Global map1
         - /acl_jackal1/Global map1/Autocompute Value Bounds1
-        - /acl_jackal1/Corrected traj1
-        - /Loop closure1
-        - /Loop closure1/Source1
-        - /Loop closure1/Target1
-        - /Loop closure1/Fine alignment1
-        - /Loop closure1/coarse alignment1
-        - /Loop closure1/debug_cloud1
+        - /Inter-session alignment1
+        - /Inter-session alignment1/Source1
+        - /Inter-session alignment1/Target1
+        - /Inter-session alignment1/Fine alignment1
+        - /Inter-session alignment1/coarse alignment1
+        - /TF1
       Splitter Ratio: 0.561093270778656
     Tree Height: 1099
   - Class: rviz_common/Selection
@@ -41,7 +38,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Current scan
+    SyncSource: Global map
 Visualization Manager:
   Class: ""
   Displays:
@@ -228,7 +225,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: FlatColor
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 2843
@@ -248,12 +245,12 @@ Visualization Manager:
             Value: /hathor/curr_scan
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 0.5
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 38.52768325805664
-            Min Value: 18.590068817138672
+            Max Value: 41.71953582763672
+            Min Value: 12.733860969543457
             Value: true
           Axis: Z
           Channel Name: intensity
@@ -261,7 +258,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: AxisColor
           Decay Time: 50
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 1518
@@ -281,7 +278,7 @@ Visualization Manager:
             Value: /hathor/curr_scan
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 0.30000001192092896
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -356,21 +353,21 @@ Visualization Manager:
         - Alpha: 1
           Buffer Length: 1
           Class: rviz_default_plugins/Path
-          Color: 25; 255; 0
+          Color: 0; 155; 255
           Enabled: true
           Head Diameter: 0.30000001192092896
           Head Length: 0.20000000298023224
           Length: 1
-          Line Style: Lines
-          Line Width: 0.029999999329447746
+          Line Style: Billboards
+          Line Width: 2
           Name: Corrected traj
           Offset:
             X: 0
             Y: 0
             Z: 0
           Pose Color: 255; 85; 255
-          Pose Style: Axes
-          Radius: 0.20000000298023224
+          Pose Style: None
+          Radius: 1
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
           Topic:
@@ -385,12 +382,12 @@ Visualization Manager:
           Buffer Length: 1
           Class: rviz_default_plugins/Path
           Color: 255; 0; 0
-          Enabled: true
+          Enabled: false
           Head Diameter: 0.30000001192092896
           Head Length: 0.20000000298023224
           Length: 0.30000001192092896
-          Line Style: Lines
-          Line Width: 0.029999999329447746
+          Line Style: Billboards
+          Line Width: 2
           Name: Raw traj
           Offset:
             X: 0
@@ -408,7 +405,7 @@ Visualization Manager:
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /hathor/path/original
-          Value: true
+          Value: false
       Enabled: true
       Name: hathor
     - Class: rviz_common/Group
@@ -594,7 +591,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: FlatColor
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 2843
@@ -614,12 +611,12 @@ Visualization Manager:
             Value: /acl_jackal/curr_scan
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 0.5
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 24.638423919677734
-            Min Value: -0.7975760102272034
+            Max Value: 20.531831741333008
+            Min Value: -2.3388147354125977
             Value: true
           Axis: Z
           Channel Name: intensity
@@ -627,7 +624,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: AxisColor
           Decay Time: 50
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 1518
@@ -647,7 +644,7 @@ Visualization Manager:
             Value: /acl_jackal/curr_scan
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 0.30000001192092896
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -722,13 +719,13 @@ Visualization Manager:
         - Alpha: 1
           Buffer Length: 1
           Class: rviz_default_plugins/Path
-          Color: 25; 255; 0
+          Color: 255; 255; 0
           Enabled: true
           Head Diameter: 0.30000001192092896
           Head Length: 0.20000000298023224
           Length: 1
-          Line Style: Lines
-          Line Width: 0.029999999329447746
+          Line Style: Billboards
+          Line Width: 2
           Name: Corrected traj
           Offset:
             X: 0
@@ -751,12 +748,12 @@ Visualization Manager:
           Buffer Length: 1
           Class: rviz_default_plugins/Path
           Color: 255; 0; 0
-          Enabled: true
+          Enabled: false
           Head Diameter: 0.30000001192092896
           Head Length: 0.20000000298023224
           Length: 0.30000001192092896
-          Line Style: Lines
-          Line Width: 0.029999999329447746
+          Line Style: Billboards
+          Line Width: 2
           Name: Raw traj
           Offset:
             X: 0
@@ -774,7 +771,7 @@ Visualization Manager:
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /acl_jackal/path/original
-          Value: true
+          Value: false
       Enabled: true
       Name: acl_jackal
     - Class: rviz_common/Group
@@ -800,7 +797,7 @@ Visualization Manager:
           Name: Source
           Position Transformer: XYZ
           Selectable: true
-          Size (Pixels): 5
+          Size (Pixels): 3
           Size (m): 0.20000000298023224
           Style: Points
           Topic:
@@ -833,7 +830,7 @@ Visualization Manager:
           Name: Target
           Position Transformer: XYZ
           Selectable: true
-          Size (Pixels): 5
+          Size (Pixels): 4
           Size (m): 0.20000000298023224
           Style: Points
           Topic:
@@ -899,7 +896,7 @@ Visualization Manager:
           Name: coarse alignment
           Position Transformer: XYZ
           Selectable: true
-          Size (Pixels): 5
+          Size (Pixels): 4.5
           Size (m): 0.009999999776482582
           Style: Points
           Topic:
@@ -907,49 +904,56 @@ Visualization Manager:
             Durability Policy: Volatile
             History Policy: Keep Last
             Reliability Policy: Reliable
-            Value: /hathor/lc/coarse_alignment
+            Value: /inter_frame/reg/coarse_alignment
           Use Fixed Frame: true
           Use rainbow: true
           Value: true
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz_default_plugins/PointCloud2
-          Color: 1; 255; 255
-          Color Transformer: FlatColor
-          Decay Time: 0
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 423.3333435058594
-          Min Color: 0; 0; 0
-          Min Intensity: 1
-          Name: debug_cloud
-          Position Transformer: XYZ
-          Selectable: true
-          Size (Pixels): 7
-          Size (m): 0.009999999776482582
-          Style: Points
-          Topic:
-            Depth: 5
-            Durability Policy: Volatile
-            History Policy: Keep Last
-            Reliability Policy: Reliable
-            Value: /inter_frame/reg/debug_cloud
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
+      Enabled: false
+      Name: Inter-session alignment
+    - Class: rviz_default_plugins/TF
       Enabled: true
-      Name: Loop closure
+      Filter (blacklist): ""
+      Filter (whitelist): ""
+      Frame Timeout: 15
+      Frames:
+        $acl_jackal/base:
+          Value: true
+        $hathor/base:
+          Value: true
+        All Enabled: true
+        acl_jackal/base:
+          Value: true
+        acl_jackal/map:
+          Value: true
+        acl_jackal/odom:
+          Value: true
+        hathor/base:
+          Value: true
+        hathor/map:
+          Value: true
+        hathor/odom:
+          Value: true
+        world:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        world:
+          acl_jackal/map:
+            $acl_jackal/base:
+              {}
+          hathor/map:
+            $hathor/base:
+              {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
-    Fixed Frame: hathor/map
+    Fixed Frame: world
     Frame Rate: 30
   Name: root
   Tools:
@@ -992,25 +996,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 434.57843017578125
+      Distance: 181.5297088623047
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -53.39835739135742
-        Y: 158.44578552246094
-        Z: 24.285808563232422
+        X: -6.971133232116699
+        Y: 1.3786215782165527
+        Z: 18.21746063232422
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5297963619232178
+      Pitch: 1.5497963428497314
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 3.392357110977173
+      Yaw: 3.4023513793945312
     Saved: ~
 Window Geometry:
   Displays:
