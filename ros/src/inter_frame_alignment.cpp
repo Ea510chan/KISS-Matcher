@@ -46,6 +46,7 @@ class InterFrameAligner : public rclcpp::Node {
     target_frame_   = declare_parameter<std::string>("target_frame", "");
     world_frame_    = declare_parameter<std::string>("world", "world");
     frame_update_hz = declare_parameter<double>("frame_update_hz", 0.2);
+    tf_hz_          = declare_parameter<double>("tf_hz", 100.0);
 
     lc_config.voxel_res_ = declare_parameter<double>("voxel_resolution", 1.0);
     lc_config.verbose_   = declare_parameter<bool>("loop.verbose", false);
@@ -82,7 +83,7 @@ class InterFrameAligner : public rclcpp::Node {
         this->create_wall_timer(std::chrono::duration<double>(1.0 / frame_update_hz),
                                 std::bind(&InterFrameAligner::performAlignment, this));
 
-    tf_timer_ = this->create_wall_timer(std::chrono::duration<double>(1.0 / 100.0),
+    tf_timer_ = this->create_wall_timer(std::chrono::duration<double>(1.0 / tf_hz_),
                                         std::bind(&InterFrameAligner::publishTF, this));
 
     // 20 Hz is enough as long as it's faster than the full registration process.
@@ -228,6 +229,7 @@ class InterFrameAligner : public rclcpp::Node {
   rclcpp::TimerBase::SharedPtr inter_alignment_timer_;
   rclcpp::TimerBase::SharedPtr cloud_vis_timer_;
   rclcpp::TimerBase::SharedPtr tf_timer_;
+  double tf_hz_;
 
   Eigen::Matrix4d target_T_source_ = Eigen::Matrix4d::Identity();
 };
