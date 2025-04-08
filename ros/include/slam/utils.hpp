@@ -3,6 +3,7 @@
 #ifndef KISS_MATCHER_UTILS_HPP
 #define KISS_MATCHER_UTILS_HPP
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/time.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
