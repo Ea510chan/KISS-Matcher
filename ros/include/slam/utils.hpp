@@ -170,6 +170,12 @@ inline geometry_msgs::msg::PoseStamped gtsamToPoseStamped(const gtsam::Pose3 &po
   return msg;
 }
 
+inline rclcpp::Time toRclcppTime(const double timestamp) {
+  int32_t sec      = static_cast<int32_t>(timestamp);
+  uint32_t nanosec = static_cast<uint32_t>((timestamp - sec) * 1e9);
+  return rclcpp::Time(sec, nanosec, RCL_ROS_TIME);
+}
+
 template <typename T>
 inline sensor_msgs::msg::PointCloud2 toROSMsg(const pcl::PointCloud<T> &cloud,
                                               const std::string &frame_id = "map") {
