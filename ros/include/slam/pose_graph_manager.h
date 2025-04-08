@@ -137,6 +137,7 @@ class PoseGraphManager : public rclcpp::Node {
   double loop_detection_radius_;  // Only for visualization
   int sub_key_num_;
 
+  size_t succeeded_query_idx_;
   std::vector<std::pair<size_t, size_t>> vis_loop_edges_;
   // pose_graph_tools_msgs::msg::PoseGraph loop_msgs_;
   std::queue<LoopIdxPair> loop_idx_pair_queue_;
