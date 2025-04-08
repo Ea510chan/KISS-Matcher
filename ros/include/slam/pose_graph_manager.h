@@ -84,7 +84,7 @@ class PoseGraphManager : public rclcpp::Node {
   void detectLoopClosureByLoopDetector();
   void detectLoopClosureByNNSearch();
 
-  void visualizeCurrentData(const Eigen::Matrix4d &lastest_odom,
+  void visualizeCurrentData(const Eigen::Matrix4d &current_odom,
                             const rclcpp::Time &timestamp,
                             const std::string &frame_id);
   void visualizePoseGraph();
@@ -116,6 +116,7 @@ class PoseGraphManager : public rclcpp::Node {
   Eigen::Matrix4d last_corrected_pose_ = Eigen::Matrix4d::Identity();
   Eigen::Matrix4d odom_delta_          = Eigen::Matrix4d::Identity();
   kiss_matcher::PoseGraphNode current_frame_;
+  rclcpp::Time current_stamp_;
   std::vector<kiss_matcher::PoseGraphNode> keyframes_;
 
   bool is_initialized_           = false;

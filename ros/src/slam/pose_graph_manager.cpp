@@ -183,14 +183,17 @@ void PoseGraphManager::callbackNode(const nav_msgs::msg::Odometry::ConstSharedPt
                                     const sensor_msgs::msg::PointCloud2::ConstSharedPtr &scan_msg) {
   static size_t latest_keyframe_idx = 0;
 
-  Eigen::Matrix4d lastest_odom = current_frame_.pose_;
+  // NOTE(hlim): For clarification, 'current' refers to the real-time incoming messages,
+  // while 'latest' indicates the last keyframe information already appended to keyframes_.
+  Eigen::Matrix4d current_odom = current_frame_.pose_;
   current_frame_               = PoseGraphNode(
       *odom_msg, *scan_msg, latest_keyframe_idx, scan_voxel_res_, store_voxelized_scan_);
+  current_stamp_ = (*odom_msg).header.stamp;
 
   kiss_matcher::TicToc total_timer;
   kiss_matcher::TicToc local_timer;
 
-  visualizeCurrentData(lastest_odom, odom_msg->header.stamp, scan_msg->header.frame_id);
+  visualizeCurrentData(current_odom, odom_msg->header.stamp, scan_msg->header.frame_id);
 
   if (!is_initialized_) {
     keyframes_.push_back(current_frame_);
@@ -431,14 +434,14 @@ void PoseGraphManager::performRegistration() {
   RCLCPP_INFO(this->get_logger(), "Reg: %.1f msec", reg_timer.toc());
 }
 
-void PoseGraphManager::visualizeCurrentData(const Eigen::Matrix4d &lastest_odom,
+void PoseGraphManager::visualizeCurrentData(const Eigen::Matrix4d &current_odom,
                                             const rclcpp::Time &timestamp,
                                             const std::string &frame_id) {
   // NOTE(hlim): Instead of visualizing only when adding keyframes (node-wise), which can feel
   // choppy, we visualize the current frame every cycle to ensure smoother, real-time visualization.
   {
     std::lock_guard<std::mutex> lock(realtime_pose_mutex_);
-    odom_delta_                    = odom_delta_ * lastest_odom.inverse() * current_frame_.pose_;
+    odom_delta_                    = odom_delta_ * current_odom.inverse() * current_frame_.pose_;
     current_frame_.pose_corrected_ = last_corrected_pose_ * odom_delta_;
 
     geometry_msgs::msg::PoseStamped ps =
