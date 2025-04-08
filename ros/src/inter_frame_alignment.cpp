@@ -136,8 +136,9 @@ class InterFrameAligner : public rclcpp::Node {
     const double eps = 1e-6;
 
     if (!reg_output.is_valid_) {
-      RCLCPP_WARN(
-          this->get_logger(), "Alignment rejected. # of inliers: %.3f", reg_output.overlapness_);
+      RCLCPP_WARN(this->get_logger(),
+                  "Alignment rejected. # of inlieres: %lu",
+                  reg_output.num_final_inliers_);
     }
 
     target_T_source_ = reg_output.pose_;
