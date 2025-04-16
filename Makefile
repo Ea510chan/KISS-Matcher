@@ -34,14 +34,14 @@ ascii_art:
 # Also install MIT-SPARK ROBIN
 # See https://github.com/MIT-SPARK/ROBIN
 # ToDo(hlim): It's not elegant, but at least it works
-cppinstall: deps ascii_art
+cppinstall: deps
 	@mkdir -p cpp/kiss_matcher/build
 	@cmake -Bcpp/kiss_matcher/build cpp/kiss_matcher -DCMAKE_BUILD_TYPE=Release
 	@cmake --build cpp/kiss_matcher/build -j$(nproc --all)
 	@$(SUDO) cmake --install cpp/kiss_matcher/build
 	@$(SUDO) cmake --install cpp/kiss_matcher/build/_deps/robin-build
 
-cppinstall_matcher_only: ascii_art
+cppinstall_matcher_only:
 	@mkdir -p cpp/kiss_matcher/build
 	@cmake -Bcpp/kiss_matcher/build cpp/kiss_matcher -DCMAKE_BUILD_TYPE=Release
 	@cmake --build cpp/kiss_matcher/build -j$(nproc --all)
