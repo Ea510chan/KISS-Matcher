@@ -8,6 +8,7 @@ launch:
   - arg: { name: enable_kmsam_rviz, default: "true" }
 
   - include:
+    # Please make sure to build SPARK-Fast-LIO first (see https://github.com/MIT-SPARK/spark-fast-lio).
       file: $(find-pkg-share spark_fast_lio)/launch/mapping_kimera_multi.launch.yaml
       arg:
         - { name: scene_id, value: $(var scene_id) }
