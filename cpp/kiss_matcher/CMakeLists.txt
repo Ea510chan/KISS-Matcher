@@ -59,7 +59,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall ${CMAKE_CXX_FLAGS}")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/core)
 
 set(TARGET_NAME kiss_matcher_core)
-add_library(${TARGET_NAME}
+# NOTE(hlim): Without `STATIC`, it leads to ImportError in Pybinding as follows:
+# "libkiss_matcher_core.so: cannot open shared object file: NO such file or directory ..."
+# See Issue #37 (https://github.com/MIT-SPARK/KISS-Matcher/issues/37)
+add_library(${TARGET_NAME} STATIC
     core/kiss_matcher/ROBINMatching.cpp
     core/kiss_matcher/FasterPFH.cpp
     core/kiss_matcher/KISSMatcher.cpp
