@@ -29,7 +29,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../cpp/kiss_matcher/)
   message(STATUS "Install KISS-Matcher using local C++ files...")
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../cpp/kiss_matcher ${CMAKE_CURRENT_BINARY_DIR}/kiss_matcher)
 else()
-  cmake_minimum_required(VERSION 3.18)
+  # cmake_minimum_required(VERSION 3.18)
   message(STATUS "Performing out-of-tree build, fetching KISS-Matcher v${CMAKE_PROJECT_VERSION} Release from Github")
   include(FetchContent)
   FetchContent_Declare(
