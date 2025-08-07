@@ -28,7 +28,7 @@ simply::
 """
 from importlib import import_module as _im
 __version__ = "1.0.0"
-__all__: list[str] = []
+__all__ = []
 # Import the backend that CMake just built (“_kiss_matcher” lives inside
 # the same package directory thanks to the change above).
 try:
