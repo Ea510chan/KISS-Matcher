@@ -19,7 +19,7 @@ message("")
 
 option(USE_CCACHE "Build using Ccache if found on the path" ON)
 option(USE_SYSTEM_EIGEN3 "Use system pre-installed Eigen" ON)
-option(USE_SYSTEM_TBB "Use system pre-installed oneAPI/tbb" OFF)
+option(USE_SYSTEM_TBB "Use system pre-installed oneAPI/tbb" ON)
 option(USE_SYSTEM_ROBIN "Use system pre-installed ROBIN from SPARK @ MIT" ON)
 option(USE_ADDRESS_SANITIZER "Use address sanitizer" OFF)
 
